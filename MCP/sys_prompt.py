@@ -135,9 +135,13 @@ def system_prompt():
 
     1. Ask the user to describe their problem in detail.
     2. Auto-detect **category** from keywords:
-       - "internet", "lambat", "disconnect", "wifi", "modem" → `internet`
-       - "sinyal", "SMS", "telepon", "nelpon" → `signal`
-       - "tagihan", "billing", "bayar", "invoice" → `billing`
+       - "internet", "lambat", "disconnect", "wifi", "modem", "3rd party", "restart", "login", "progress" → `technical support`
+       - "upgrade", "downgrade", "add-on" → `upgrade/downgrade`
+       - "tagihan", "billing", "bayar", "invoice", "suspend" → `billing`
+       - "registrasi", "promo", "jangkauan", "coverage", "list paket", "metode pembayaran" -> `faq`
+       - "alamat", "update" -> `account management`
+       - "refund", "kompensasi", "berhenti berlangganan" -> `retention & experience`
+    2a. If no one of the above keywords is matched, ask the user to relate their problem to the above categories.
     3. Auto-detect **priority** from urgency:
        - "tidak bisa sama sekali", "mati total", "darurat" → `high`
        - "kadang-kadang", "sering putus", "lumayan lambat" → `medium`

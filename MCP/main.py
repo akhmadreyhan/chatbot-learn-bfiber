@@ -24,6 +24,18 @@ def sys_prompt():
 
 
 @mcp.tool()
+def chat_cat(message: str) -> str:
+    """
+    Categorize the user message, is it complaint, chitchat, or question.
+    """
+    chat_category = {"complaint", "chitchat", "question"}
+    if message != next(iter(chat_category.values())):
+        return f"Message {message} is not complaint, forbidden to run tool create_ticket"
+    else:
+        return f"Message {message} is complaint, allowed to run tool create_ticket"
+    
+
+@mcp.tool()
 def create_ticket(
     user_id: int,
     title: str,
@@ -34,12 +46,12 @@ def create_ticket(
     """
     Create a new support ticket in the database.
     IMPORTANT: user_id MUST come from find_user() or create_user() — never invented.
-    category must be one of: internet, signal, billing.
+    category must be one of: technical support, billing, account management, retention & experience.
     priority must be one of: low, medium, high.
     status is automatically set to 'open'.
     """
 
-    valid_categories = {"internet", "signal", "billing"}
+    valid_categories = {"technical support", "billing", "account management", "retention & experience"}
     valid_priorities = {"low", "medium", "high"}
 
     if category not in valid_categories:
