@@ -1,0 +1,15 @@
+langchain
+langchain-community
+langchain-tools
+langchain-openai
+langchain-google-genai
+langchain-core
+python-dotenv
+fastmcp
+httpx
+sqlalchemy
+pymysql
+chromadb
+sentence-transformers
+fastapi
+pydantic

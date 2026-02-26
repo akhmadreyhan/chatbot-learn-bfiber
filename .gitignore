@@ -1,0 +1,56 @@
+# ========================
+# Credentials & Secrets
+# ========================
+.env
+.env.*
+!.env.example
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ========================
+# Virtual Environment
+# ========================
+.venv/
+venv/
+ENV/
+
+# ========================
+# Vector DB (ChromaDB)
+# ========================
+faq_db/
+
+# ========================
+# LibreChat (submodule/repo terpisah)
+# ========================
+LibreChat/
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========================
+# OS Generated
+# ========================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ========================
+# Misc
+# ========================
+*.log
