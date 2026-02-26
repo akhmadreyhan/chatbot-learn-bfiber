@@ -1,0 +1,35 @@
+name: Daily Auto Commit (16:55 WIB)
+
+on:
+  schedule:
+    # Berjalan setiap hari pada 09:45 UTC (16:45 WIB)
+    - cron: '55 9 * * *'
+  
+  # Memungkinkan kamu menjalankan ini secara manual tombol "Run workflow" di GitHub
+  workflow_dispatch: 
+
+jobs:
+  auto-commit-job:
+    runs-on: ubuntu-latest
+    
+    # Memberikan izin agar GitHub Actions bisa melakukan push ke repo kamu
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- PERHATIAN ---
+      # Karena ini berjalan di server GitHub, kode harus dimodifikasi DI SINI 
+      # agar ada sesuatu yang bisa di-commit.
+      # Misalnya: menjalankan formatter, update file otomatis, dll.
+
+      - name: Auto Commit Perubahan
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update otomatis jam 16:55 WIB"
+          
+          # Opsional: Jika kamu hanya ingin membatasi file tertentu yang di-commit
+          # Hapus baris ini jika ingin commit semua perubahan
+          file_pattern: "*.py"

@@ -16,8 +16,6 @@ class ChatRequest(BaseModel):
 @app.post("/v1/chat/completions")
 def chat(request: ChatRequest):
     user_msg = request.message
-    session_id = "librechat-session"
-    user_id = 1
 
     reply = detect_route(user_msg)
     return {
