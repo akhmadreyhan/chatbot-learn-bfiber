@@ -94,85 +94,162 @@ def so_get_profile(id: str) -> dict:
 
 
 # =========================
-# Core Network
+# API SO Agent (tetap)
 # =========================
 @mcp.tool()
-def cn_cek_gangguan_masal(daerah: str) -> dict:
+def ubah_paket_langganan(id: str, paket_sebelumnya: str) -> dict:
     """
-    Cek gangguan massal berdasarkan daerah.
+    Ubah paket langganan pelanggan.
+
+    Pakai jika user minta upgrade/downgrade paket.
+    Biasanya kamu ambil paket_sebelumnya dari so_get_profile(id).
 
     Parameter:
-    - daerah (str)
+    - id (str)
+    - paket_sebelumnya (str): contoh "gold"
 
     Output:
-    - {"gangguan_masal": true/false}
+    - {"success": true/false, "paket_sekarang": "..."}
     """
-    return {"gangguan_masal": _rand_bool(0.3)}
+    success = _rand_bool()
+    return {"success": success, "paket_sekarang": _rand_package() if success else paket_sebelumnya}
 
 
 @mcp.tool()
-def cn_cek_status_service(service_id_cn: str) -> dict:
+def pindah_alamat(id: str) -> dict:
     """
-    Cek status service di core network (aktif/suspend).
+    Pindah alamat pelanggan.
+
+    Parameter:
+    - id (str)
+
+    Output:
+    - {"success": true/false, "alamat_baru": "..."/null}
+    """
+    success = _rand_bool()
+    return {"success": success, "alamat_baru": f"Jl. Contoh No.{random.randint(1,200)}, {_rand_area()}" if success else None}
+
+
+@mcp.tool()
+def bayar_tagihan(id: str) -> dict:
+    """
+    Simulasi bayar tagihan.
+
+    Parameter:
+    - id (str)
+
+    Output:
+    - {"success": true/false, "message":"berhasil/gagal/saldo tidak sesuai"}
+    """
+    success = _rand_bool()
+    message = "berhasil" if success else random.choice(["saldo tidak sesuai", "gagal"])
+    return {"success": success, "message": message}
+
+
+@mcp.tool()
+def berhenti_langganan(id: str) -> dict:
+    """
+    Berhenti langganan.
+
+    Parameter:
+    - id (str)
+
+    Output:
+    - {"success": true/false, "message":"berhasil/gagal"}
+    """
+    return {"success": _rand_bool(), "message": random.choice(["berhasil", "gagal"])}
+
+
+@mcp.tool()
+def mau_langganan(nama: str, domisili: str) -> dict:
+    """
+    Daftar pelanggan baru.
+
+    Parameter:
+    - nama (str)
+    - domisili (str)
+
+    Output:
+    - {"id_baru": "CUST-xxxxxx"}
+    """
+    return {"id_baru": f"CUST-{random.randint(100000,999999)}"}
+
+
+@mcp.tool()
+def aktifkan_ulang_langganan(id: str) -> dict:
+    """
+    Aktifkan ulang pelanggan (misal habis berhenti/suspend).
+
+    Parameter:
+    - id (str)
+
+    Output:
+    - {"success": true/false}
+    """
+    return {"success": _rand_bool()}
+
+
+@mcp.tool()
+def update_data_pelanggan(id: str, alamat: str = "", no_hp: str = "") -> dict:
+    """
+    Update data pelanggan.
+
+    Parameter:
+    - id (str)
+    - alamat (str, optional)
+    - no_hp (str, optional)
+
+    Output:
+    - {"success": true/false}
+    """
+    return {"success": _rand_bool()}
+
+
+# =========================
+# Ticket Agent
+# =========================
+@mcp.tool()
+def teknisi_datang_kerumah(id: str, alamat_dituju: str) -> dict:
+    """
+    Buat tiket kunjungan teknisi ke rumah.
+
+    Parameter:
+    - id (str)
+    - alamat_dituju (str): alamat tujuan teknisi
+
+    Output:
+    - {"ticket_id": "TCK-xxxxx"}
+    """
+    return {"ticket_id": f"TCK-{random.randint(10000,99999)}"}
+
+
+@mcp.tool()
+def ticket_kecepatan_internet_tidak_sesuai(service_id_cn: str) -> dict:
+    """
+    Buat tiket: kecepatan internet tidak sesuai.
 
     Parameter:
     - service_id_cn (str)
 
     Output:
-    - {"status": "aktif"|"suspend"}
+    - {"ticket_id": "TCK-CN-xxxxx"}
     """
-    return {"status": random.choice(["aktif", "suspend"])}
+    return {"ticket_id": f"TCK-CN-{random.randint(10000,99999)}"}
 
 
 @mcp.tool()
-def cn_cek_ip_dapat(service_id_cn: str) -> dict:
+def ticket_jaringan_overload(service_id_cn: str) -> dict:
     """
-    Cek apakah IP assigned di core network.
+    Buat tiket: jaringan overload.
 
     Parameter:
     - service_id_cn (str)
 
     Output:
-    - {"ip_assigned": true/false}
+    - {"ticket_id": "TCK-CN-xxxxx"}
     """
-    return {"ip_assigned": _rand_bool(0.8)}
-
-
-@mcp.tool()
-def cn_cek_session_pppoe(service_id_cn: str) -> dict:
-    """
-    Cek PPPoE session status.
-
-    Parameter:
-    - service_id_cn (str)
-
-    Output:
-    - {"pppoe_status": "aktif"|"tidak_aktif"}
-    """
-    return {"pppoe_status": random.choice(["aktif", "tidak_aktif"])}
-
-
-@mcp.tool()
-def cn_trace_jalur(service_id_cn: str) -> dict:
-    """
-    Trace jalur untuk cari titik putus.
-
-    Parameter:
-    - service_id_cn (str)
-
-    Output:
-    - {"trace_result": "..."}
-    """
-    return {
-        "trace_result": random.choice([
-            "normal",
-            "putus di OLT",
-            "putus di uplink",
-            "putus di core router",
-            "unknown"
-        ])
-    }
+    return {"ticket_id": f"TCK-CN-{random.randint(10000,99999)}"}
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=5001)
+    mcp.run()
