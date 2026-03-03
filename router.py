@@ -5,20 +5,20 @@ import json
 llm = load_llm()
 
 route_prompt = """
-Classify the user message into one domain:
-- technical
-- billing
-- sales
-- faq
-Clues:
-- technical: user message is related to technical issues, such as internet connection, speed, device, etc.
-- billing: user message is related to billing issues, such as payment, invoice, subscription, etc.
-- sales: user message is related to sales issues, such as new plan, upgrade, downgrade, etc.
-- faq: user message is related to frequently asked questions, such as how to, what is, etc.
-Notes:
-- If the user message is not related to any of the domains, return "chitchat"
-- Use the conversation context to understand follow-up messages. For example, if the assistant asked for a customer ID and the user replies with a number, classify it based on the ongoing conversation topic.
-Return JSON:
+Klasifikasikan pesan pengguna ke dalam salah satu domain berikut:
+- sales order agent
+- core network agent
+- ont agent
+- other network system
+Petunjuk:
+- sales order agent: pesan pengguna berkaitan dengan bantuan pelanggan, seperti gangguan massal, cek internet, pembayaran tagihan, domisili pengguna, cek paket internet pengguna, status pengguna, riwayat pembayaran terakhir, ONT perangkat.
+- core network agent: pesan pengguna berkaitan dengan masalah sinyal, seperti jaringan overload, status layanan, sesi login, dll.
+- ont agent: pesan pengguna berkaitan dengan masalah router/modem, seperti ping, restart, matikan, ganti password, tes kecepatan, dll.
+- other network system: pesan pengguna berkaitan dengan pertanyaan umum (FAQ), seperti bagaimana cara, apa itu, dll.
+Catatan:
+- Jika pesan pengguna tidak berkaitan dengan domain mana pun di atas, kembalikan "chitchat"
+- Gunakan konteks percakapan sebelumnya untuk memahami pesan lanjutan. Contohnya, jika asisten baru saja menanyakan ID pelanggan dan pengguna merespons dengan angka, klasifikasikan pesan tersebut berdasarkan topik obrolan saat ini.
+Kembalikan dalam format JSON murni:
 {"domain": "..."}
 """
 

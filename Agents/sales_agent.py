@@ -1,11 +1,16 @@
 from langchain.agents import create_agent
-from MCP.sales.mcp import so_get_profile, ubah_paket_langganan, pindah_alamat, bayar_tagihan, berhenti_langganan, mau_langganan, aktifkan_ulang_langganan, update_data_pelanggan
+from MCP.sales.mcp import validate_customer, check_billing, check_gamas, get_ticket, create_escalation
 from MCP.sales.sys_prompt import system_prompt
 from llm import load_llm
 
 
-tools = [so_get_profile, ubah_paket_langganan, pindah_alamat, bayar_tagihan, berhenti_langganan, mau_langganan, aktifkan_ulang_langganan, update_data_pelanggan]
+# List the imported functions precisely matching the ones in your new MCP.sales.mcp file
+tools = [validate_customer, check_billing, check_gamas, get_ticket, create_escalation]
 
-def run(user_msg:str, chat_history):
-    agent = create_agent(model=load_llm(), tools=tools, system_prompt=system_prompt())
-    return agent.invoke({"messages" : user_msg, "chat_history" : chat_history})
+def run(user_msg: str, chat_history: list):
+    formatted_history = "\n".join([f"{msg['role'].upper()}: {msg.get('message', msg.get('content', ''))}" for msg in chat_history])
+    print(formatted_history)
+    dynamic_prompt = system_prompt() + f"\n\n--- THIS IS SAVED MEMORY CONSERVATION. IF USER ASKED TO DO SOMETHING OR MAKE SOMETHING, MAKE SURE TO READ USER ID FROM THIS MEMORY ---\n{formatted_history}"
+    
+    agent = create_agent(model=load_llm(), tools=tools, system_prompt=dynamic_prompt)
+    return agent.invoke({"messages": user_msg})

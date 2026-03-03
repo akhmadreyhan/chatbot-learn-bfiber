@@ -6,6 +6,7 @@ engine = create_engine(
 )
 
 def load_memory(session_id:int) -> str:
+    print(session_id)
     with engine.connect() as conn:
         query = conn.execute(text("""
             SELECT role, message FROM chat_history WHERE session_id = :session_id ORDER BY created_at ASC 

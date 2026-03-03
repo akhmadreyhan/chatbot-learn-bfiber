@@ -136,7 +136,8 @@ def _get_ai_content(request: ChatRequest):
     else:
         user_msg = content or ""
     session = request.user or "librechat-session"
-    history = load_memory(session)
+    # history = load_memory(session)
+    global_history = load_memory(session_id=session)
     user_id = 1
 
     # Build context from recent messages (last 6 messages, excluding current)
@@ -154,12 +155,13 @@ def _get_ai_content(request: ChatRequest):
 
     reply = detect_route(user_msg, context=context if context else None)
     agent = get_agent(reply)
+    print(agent)
 
     if agent is None:
         return "Maaf, saat ini saya hanya bisa membantu dengan masalah mengenai BFiber. Silakan hubungi call center BFiber untuk masalah lain."
 
     try:
-        response = agent.run(user_msg, history)
+        response = agent.run(user_msg, chat_history=global_history)
         message = response.get("messages", [])
 
         if message:
@@ -170,7 +172,6 @@ def _get_ai_content(request: ChatRequest):
                 ai_content = str(last_msg)
         else:
             ai_content = ""
-
         save_memory(session, user_id, "user", user_msg)
         save_memory(session, user_id, "assistant", str(ai_content))
         return str(ai_content)

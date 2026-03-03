@@ -1,178 +1,40 @@
-from fastmcp import FastMCP
-import random
-import sys
 import logging
-from datetime import datetime, timedelta
+import os
+from typing import Optional
 
-# IMPORTANT: never print() in MCP stdio server
-logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+import httpx
+from fastmcp import FastMCP
 
-mcp = FastMCP("Telco Mock MCP")
+logging.getLogger("mcp").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
-# =========================
-# Helper
-# =========================
-def _rand_bool(p=0.7):
-    return random.random() < p
+BASE_URL = os.getenv("API_BASE_URL", "http://172.16.7.42:8910")
+mcp = FastMCP("balifiber")
 
-def _rand_date(days=120):
-    d = datetime.now() - timedelta(days=random.randint(0, days))
-    return d.strftime("%Y-%m-%d")
-
-def _rand_ip():
-    return f"10.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(2,254)}"
-
-def _rand_service_id():
-    return f"CN-{random.randint(100000,999999)}"
-
-def _rand_area():
-    return random.choice(["Jakarta", "Bandung", "Tangerang", "Bekasi", "Depok"])
-
-def _rand_package():
-    return random.choice(["platinum", "gold", "silver"])
+def _get(path: str, **params) -> dict:
+    r = httpx.get(f"{BASE_URL}{path}", params=params)
+    r.raise_for_status()
+    return r.json()
 
 
-# =========================
-# ✅ SO MASTER TOOL (DISATUIN)
-# =========================
+def _post(path: str, body: dict) -> dict:
+    r = httpx.post(f"{BASE_URL}{path}", json=body)
+    r.raise_for_status()
+    return r.json()
+
 @mcp.tool()
-def so_get_profile(id: str) -> dict:
-    """
-    [MASTER] Ambil profil lengkap pelanggan berdasarkan ID.
-
-    PAKAI INI PERTAMA kalau user:
-    - "internet mati", "wifi mati", "lemot", "putus-putus"
-    - "cek tagihan", "cek paket", "cek status", "mau restart modem tapi gak tau IP"
-    - intinya: user kasih ID -> butuh semua info untuk troubleshooting.
-
-    Parameter:
-    - id (str): ID pelanggan. contoh: "12345"
-
-    Output jika BUKAN pelanggan:
-    - {
-        "customer": "tidak",
-        "id": "<id>"
-      }
-
-    Output jika pelanggan:
-    - {
-        "customer": "ya",
-        "id": "<id>",
-        "daerah": "Jakarta/Bandung/...",
-        "paket": "platinum/gold/silver",
-        "ip": "10.x.x.x",
-        "service_id_cn": "CN-123456",
-        "status_pelanggan": "aktif/suspend/berhenti",
-        "tanggal_terakhir_bayar": "YYYY-MM-DD",
-        "tagihan": {
-          "tunggakan_bulan": 1-6,
-          "total_tagihan": <rupiah>
-        }
-      }
-    """
-    is_customer = _rand_bool(0.85)
-    if not is_customer:
-        return {"customer": "tidak", "id": id}
-
-    tunggakan = random.randint(0, 6)  # boleh 0 juga biar realistis
-    total = 0 if tunggakan == 0 else random.randint(100_000, 5_000_000)
-
-    return {
-        "customer": "ya",
-        "id": id,
-        "daerah": _rand_area(),
-        "paket": _rand_package(),
-        "ip": _rand_ip(),
-        "service_id_cn": _rand_service_id(),
-        "status_pelanggan": random.choice(["aktif", "suspend", "berhenti"]),
-        "tanggal_terakhir_bayar": _rand_date(180),
-        "tagihan": {
-            "tunggakan_bulan": tunggakan,
-            "total_tagihan": total
-        }
-    }
-
-
-# =========================
-# Core Network
-# =========================
-@mcp.tool()
-def cn_cek_gangguan_masal(daerah: str) -> dict:
-    """
-    Cek gangguan massal berdasarkan daerah.
-
-    Parameter:
-    - daerah (str)
-
-    Output:
-    - {"gangguan_masal": true/false}
-    """
-    return {"gangguan_masal": _rand_bool(0.3)}
+def check_ont(ont_serial: str, billing_account: Optional[str] = None) -> dict:
+    """Cek status perangkat ONT pelanggan (online, sinyal, alarm)."""
+    body: dict = {"ont_serial": ont_serial, "ont_type": "ONT_4_PORT"}
+    if billing_account:
+        body["billing_account"] = billing_account
+    return _post("/cn/ont/check", body)
 
 
 @mcp.tool()
-def cn_cek_status_service(service_id_cn: str) -> dict:
-    """
-    Cek status service di core network (aktif/suspend).
-
-    Parameter:
-    - service_id_cn (str)
-
-    Output:
-    - {"status": "aktif"|"suspend"}
-    """
-    return {"status": random.choice(["aktif", "suspend"])}
-
-
-@mcp.tool()
-def cn_cek_ip_dapat(service_id_cn: str) -> dict:
-    """
-    Cek apakah IP assigned di core network.
-
-    Parameter:
-    - service_id_cn (str)
-
-    Output:
-    - {"ip_assigned": true/false}
-    """
-    return {"ip_assigned": _rand_bool(0.8)}
-
-
-@mcp.tool()
-def cn_cek_session_pppoe(service_id_cn: str) -> dict:
-    """
-    Cek PPPoE session status.
-
-    Parameter:
-    - service_id_cn (str)
-
-    Output:
-    - {"pppoe_status": "aktif"|"tidak_aktif"}
-    """
-    return {"pppoe_status": random.choice(["aktif", "tidak_aktif"])}
-
-
-@mcp.tool()
-def cn_trace_jalur(service_id_cn: str) -> dict:
-    """
-    Trace jalur untuk cari titik putus.
-
-    Parameter:
-    - service_id_cn (str)
-
-    Output:
-    - {"trace_result": "..."}
-    """
-    return {
-        "trace_result": random.choice([
-            "normal",
-            "putus di OLT",
-            "putus di uplink",
-            "putus di core router",
-            "unknown"
-        ])
-    }
-
-
-if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=5001)
+def restart_ont(ont_serial: str, reason: Optional[str] = None) -> dict:
+    """Kirim perintah restart ONT pelanggan."""
+    body: dict = {"ont_serial": ont_serial}
+    if reason:
+        body["reason"] = reason
+    return _post("/cn/ont/restart", body)
